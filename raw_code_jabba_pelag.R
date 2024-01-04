@@ -1,46 +1,37 @@
 
 library(JABBA)
 library(tidyverse)
-File = "~/DOCAS/Krill_Spatial_JABBA" # LINK to your folder of choice here
+# leo data 
 
-df <- read_csv("~/DOCAS/Krill_Spatial_JABBA/data_krill_jabba.csv") %>% 
-  filter(Year>2000,
-         Year<2019)
+File = "~/IFOP/Escritos/Pelagics_Chile_Jabba" # LINK to your folder of choice here
 
-# or
+df <- read_csv("ACS.csv")
+df1  <- as.data.frame(df)
 
-yr = 2001:2018
-ct = c(4981 , 72060 , 15427 , 46456 , 73494   ,3102 , 65591 ,
-       93384  ,91855  ,49999 ,115995,  29040,
-       31306,  72455,  17101,  34302,  69046, 137880)
-it = c(4.163482 , 6.377938  ,5.436893,  4.465801,  2.882375, 11.189135,
-       9.716262  ,3.674545, 10.056334, 12.419098,
-       8.263407,  7.026917,  8.643829 , 9.527634,  8.466477 , 8.907962,
-       8.936349, 10.324057)
-se = rep(0.3, 18)
-df = data.frame(year=yr,ct=ct,bacu=it,itse=se)
+# genero la carpeta para resultados ---------------------------------------
 
-assessment = "KrillSP"
+assessment = "PelagicsSP"
 output.dir = file.path(File,assessment)
 dir.create(output.dir,showWarnings = F)
 setwd(output.dir)
 
-# Prepara los datos de huepo ----------------------------------------------
-cpue = df[,c(1,3)]
-colnames(cpue) = c("Year", "Bv")
-se = df[,c(1,4)]
-colnames(se) = c("Year", "Bv")
-catch = df[,c(1,2)]
+
+# Prepara los datos de ACS ----------------------------------------------
+cpue = df1[,c(1,3)]
+colnames(cpue) = c("Year", "SurveyS")
+se = df1[,c(1,4)]
+colnames(se) = c("Year", "SE")
+catch = df1[,c(1,2)]
 colnames(catch) = c("Year","Total")
-kril <- list()
-kril$cpue <- cpue
-kril$se <- se
-kril$catch <- catch
+acs <- list()
+acs$cpue <- cpue
+acs$se <- se
+acs$catch <- catch
 
 # Compile JABBA JAGS model and input object
-m1_input = build_jabba(catch=kril$catch,
-                       cpue=kril$cpue,
-                       se=kril$se,
+m1_input = build_jabba(catch=acs$catch,
+                       cpue=acs$SurveyS,
+                       se=acs$se,
                        assessment="caso 1",
                        scenario = "Fox",
                        model.type = "Fox",

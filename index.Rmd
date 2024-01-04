@@ -1,0 +1,28 @@
+---
+title: "Untitled"
+author: "Mauricio Mardones I."
+date: "2024-01-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# 
+```{r}
+library(JABBA)
+library(tidyverse)
+```
+
+library(JABBA)
+library(tidyverse)
+File = "~/DOCAS/Krill_Spatial_JABBA" # LINK to your folder of choice here
+
+df <- read_csv("~/DOCAS/Krill_Spatial_JABBA/data_krill_jabba.csv") %>% 
+  filter(Year>2000,
+         Year<2019)
+
+
