@@ -17,12 +17,38 @@ library(JABBA)
 library(tidyverse)
 ```
 
-library(JABBA)
-library(tidyverse)
-File = "~/DOCAS/Krill_Spatial_JABBA" # LINK to your folder of choice here
+## Read data
 
-df <- read_csv("~/DOCAS/Krill_Spatial_JABBA/data_krill_jabba.csv") %>% 
-  filter(Year>2000,
-         Year<2019)
+```{r}
+File = "~/IFOP/Escritos/Pelagics_Chile_Jabba" # LINK to your folder of choice here
+df <- read_csv("ACS.csv")
+df1  <- as.data.frame(df)
+```
+
+## made folder to save outputs
+
+```{r eval=FALSE}
+assessment = "PelagicsSP"
+output.dir = file.path(File,assessment)
+dir.create(output.dir,showWarnings = F)
+setwd(output.dir)
+```
+
+## Prepare data format requirement
+
+```{r}
+# Prepara los datos de ACS ----------------------------------------------
+cpue = df1[,c(1,3)]
+colnames(cpue) = c("Year", "SurveyS")
+se = df1[,c(1,4)]
+colnames(se) = c("Year", "SE")
+catch = df1[,c(1,2)]
+colnames(catch) = c("Year","Total")
+acs <- list()
+acs$cpue <- cpue
+acs$se <- se
+acs$catch <- catch
+```
+
 
 

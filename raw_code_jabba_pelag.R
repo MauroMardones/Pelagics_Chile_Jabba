@@ -42,69 +42,78 @@ jbplot_indices(m1_input)
 
 
 # Fit JABBA (here mostly default value - careful)
-kril1 = fit_jabba(m1_input,quickmcmc = TRUE) # quick run
+anchocs1 = fit_jabba(m1_input,
+                quickmcmc = TRUE,
+                 do.ppc=TRUE) # quick run
 
-head(kril1$kobe)
+head(anchocs1$kobe)
 
 # Make individual plots
-jbplot_catch(kril1)
-jbplot_catcherror(kril1)
-jbplot_ppdist(kril1)
-jbplot_mcmc(kril1)
-jbplot_residuals(kril1)
-jbplot_cpuefits(kril1)
-jbplot_runstest(kril1)
-jbplot_logfits(kril1)
-jbplot_procdev(kril1)
-jbplot_PPC(kril1) # Posterior Predictive Checks - Not great should 0.2-0.8
+jbplot_catch(anchocs1)
+jbplot_catcherror(anchocs1)
+jbplot_ppdist(anchocs1)
+jbplot_mcmc(anchocs1)
+jbplot_residuals(anchocs1)
+jbplot_cpuefits(anchocs1)
+jbplot_runstest(anchocs1)
+jbplot_logfits(anchocs1)
+jbplot_procdev(anchocs1)
+jbplot_PPC(anchocs1) # Posterior Predictive Checks - Not great should 0.2-0.8
 
 # Status
-jbplot_summary(kril1)
+jbplot_summary(anchocs1)
 # combine plots
 jbpar(mfrow=c(2,2))
-jbplot_summary(kril1,add=T,type = c("BBmsy", "FFmsy"))
-jbplot_spphase(kril1,add=T)
-jbplot_kobe(kril1,add=T)
+jbplot_summary(anchocs1,add=T,type = c("BBmsy", "FFmsy"))
+jbplot_spphase(anchocs1,add=T)
+jbplot_kobe(anchocs1,add=T)
 
 jbpar(mfrow=c(3,2),plot.cex = 0.8)
-jbplot_ensemble(kril1)
+jbplot_ensemble(anchocs1)
 
 # Try to improve runs test diagnostics by changing the variance settings
 # Increase minimum obs error from 0.01 to 0.1 and remove SEs from CPUE model
-jbinput2 = build_jabba(catch=bet$catch,cpue=bet$cpue,se=NULL,assessment=assessment,
-                       scenario = "Run2",model.type = "Fox",sigma.est = TRUE,fixed.obsE = 0.1,igamma = c(0.001,0.001),
+jbinput2 = build_jabba(catch=acs$catch,
+                       cpue=acs$SurveyS,
+                       se=NULL,
+                       assessment=assessment,
+                       scenario = "Run2",
+                       model.type = "Fox",
+                       sigma.est = TRUE,
+                       fixed.obsE = 0.1,
+                       igamma = c(0.001,0.001),
                        psi.prior = c(1,0.2), # Initial depletion B/K
                        verbose = F)
 
 
-bet2 = fit_jabba(jbinput2,quickmcmc = T)
+anchocs2 = fit_jabba(jbinput2,quickmcmc = T)
 # Check residual diags
-jbplot_cpuefits(bet2)
-jbplot_runstest(bet2)
-jbplot_logfits(bet2)
-jbplot_PPC(bet2)
+jbplot_cpuefits(anchocs2)
+jbplot_runstest(anchocs2)
+jbplot_logfits(anchocs2)
+jbplot_PPC(anchocs2)
 # Improved
 refinput = jbinput2 # Note as reference input 
 
 # Compare
-jbplot_summary(list(Run1=kril1,Run2=bet2))
-jbplot_ensemble(list(Run1=kril1,Run2=bet2))
+jbplot_summary(list(Run1=anchocs1,Run2=anchocs2))
+jbplot_ensemble(list(Run1=anchocs1,Run2=anchocs2))
 
 # Check parameters and convergence (p <0.05 is not fully converged)
-bet2$pars 
+anchocs2$pars 
 # Make a long MCMC run with 3 chains
-bet.full = fit_jabba(jbinput2,nc=3)
+acs.full = fit_jabba(jbinput2,nc=3)
 
 # MCMC convergence
-bet.full$pars 
-jbplot_mcmc(bet.full)
+acs.full$pars 
+jbplot_mcmc(acs.full)
 
 # get quantaties
-bet.full$estimates
+acs.full$estimates
 # FLR data.frame trajectories
-bet.full$flqs
+acs.full$flqs
 # fits
-bet.full$diags
+acs.full$diags
 
 
 #------------------------------------------------------
@@ -112,8 +121,12 @@ bet.full$diags
 #-------------------------------------------------------
 
 # Compile JABBA JAGS model and input object
-jbinput3 = build_jabba(catch=bet$catch,cpue=bet$cpue,se=NULL,assessment=assessment,
-                       scenario = "Est.Shape",model.type = "Pella_m", # Estimate shape
+jbinput3 = build_jabba(catch=acs$catch,
+                       cpue=acs$SurveyS,
+                       se=NULL,
+                       assessment=assessment,
+                       scenario = "Est.Shape",
+                       model.type = "Pella_m", # Estimate shape
                        BmsyK=0.4, # mean 40%B0
                        shape.CV = 0.3, #CV
                        sigma.est = TRUE,
@@ -121,28 +134,39 @@ jbinput3 = build_jabba(catch=bet$catch,cpue=bet$cpue,se=NULL,assessment=assessme
                        igamma = c(0.001,0.001),
                        psi.prior = c(1,0.1))
 
-bet3 = fit_jabba(jbinput3,quickmcmc=F)
+acs3 = fit_jabba(jbinput3,quickmcmc=F)
 
-jbplot_ppdist(bet3) # check shape prior & posterior dist - not much information
+jbplot_ppdist(acs3) # check shape prior & posterior dist - not much information
 # Compare
-jbplot_summary(list(bet2,bet3))
-jbplot_ensemble(list(bet2,bet3))
+jbplot_summary(list(anchocs2,acs3))
+jbplot_ensemble(list(anchocs2,acs3))
 
 # also run model as Schaefer
-jbinput4 = build_jabba(catch=bet$catch,cpue=bet$cpue,se=NULL,assessment=assessment,
-                       scenario = "Schaefer",model.type = "Schaefer", # Estimate shape
+jbinput4 = build_jabba(catch=acs$catch,
+                       cpue=acs$SurveyS,
+                       se=NULL,
+                       assessment=assessment,
+                       scenario = "Schaefer",
+                       model.type = "Schaefer", # Estimate shape
                        sigma.est = TRUE,
                        fixed.obsE = 0.1,
                        igamma = c(0.001,0.001),
                        psi.prior = c(1,0.1))
 
-bet4 = fit_jabba(jbinput4,quickmcmc=T)
+acs4 = fit_jabba(jbinput4,quickmcmc=T)
 
 # Compare 
 jbpar(mfrow=c(3,2),plot.cex=0.7)
-jbplot_ensemble(list(kril1,bet2,bet3,bet4))
+jbplot_ensemble(list(anchocs1,
+                     anchocs2,
+                     acs3,
+                     acs4))
 jbpar(mfrow=c(3,2),plot.cex=0.6)
-jbplot_summary(list(kril1,bet2,bet3,bet4),add=T)
+jbplot_summary(list(anchocs1,
+                    anchocs2,
+                    acs3,
+                    acs4),
+               add=T)
 
 #----------------------------------------------------
 # Do some forecasting
@@ -151,7 +175,13 @@ jbplot_summary(list(kril1,bet2,bet3,bet4),add=T)
 # F-based forecasting
 # Relative Fmsy
 # Single Forecast for Base-Case model - now works with imp.yr=1 
-fw1 = fw_jabba(bet2,nyears=10,imp.yr=1,imp.values = seq(0.8,1.2,0.1),quant="F",type="msy",stochastic = T)
+fw1 = fw_jabba(anchocs2,
+               nyears=10,
+               imp.yr=1,
+               imp.values = seq(0.8,1.2,0.1),
+               quant="F",
+               type="msy",
+               stochastic = T)
 #jbpar(mfrow=c(3,2))
 jbpar(mfrow=c(3,2),plot.cex = 0.7)
 jbplot_ensemble(fw1)
@@ -159,7 +189,7 @@ jbplot_ensemble(fw1)
 jbplot_ensemble(fw1,xlim=c(2010,2027))
 abline(v=2018) # Check
 # Forecast with AR1 process error
-fw1.ar1 = fw_jabba(bet2,nyears=10,imp.yr=1,quant="F",type="msy",AR1=TRUE,stochastic = T)
+fw1.ar1 = fw_jabba(anchocs2,nyears=10,imp.yr=1,quant="F",type="msy",AR1=TRUE,stochastic = T)
 # now compare
 jbpar(mfrow=c(3,2),plot.cex = 0.6)
 for(i in 1:3){
@@ -170,7 +200,7 @@ mtext(c("Default","AR1"),outer=T,at=c(0.27,0.77))
 
 # IOTC-Style: Relative current catch (default mean 3 yrs)
 # 10 years, 2 intermediate years, deterministic
-fw.io = fw_jabba(bet2,nyears=10,imp.yr=3,imp.values = seq(0.6,1.2,0.1),quant="Catch",type="ratio",nsq=3,stochastic = F)
+fw.io = fw_jabba(anchocs2,nyears=10,imp.yr=3,imp.values = seq(0.6,1.2,0.1),quant="Catch",type="ratio",nsq=3,stochastic = F)
 jbplot_ensemble(fw.io)
 jbpar(mfrow=c(2,2))
 jbplot_ensemble(fw.io,add=T,subplots = 1,legend.loc = "topright")
@@ -181,7 +211,7 @@ jbplot_ensemble(fw.io,add=T,subplots = 6,legend=F)
 # ICCAT Style
 Ccur = mean(tail(jbinput2$data$catch[,2],2))
 TACs = c(75500,seq(60000,78000,2000))
-fw.iccat= fw_jabba(bet2,nyears=10,imp.yr=3,initial = c(Ccur,76000),imp.values = TACs,quant="Catch",type="abs",nsq=3,stochastic = F,AR1=T)
+fw.iccat= fw_jabba(anchocs2,nyears=10,imp.yr=3,initial = c(Ccur,76000),imp.values = TACs,quant="Catch",type="abs",nsq=3,stochastic = F,AR1=T)
 
 jbpar(mfrow=c(2,2))
 jbplot_ensemble(fw.iccat,legendcex = 0.4,xlim=c(2010,2027),subplots = c(1,2,5,6),add=T)
@@ -193,14 +223,14 @@ jbplot_ensemble(fw.iccat,legendcex = 0.4,xlim=c(2010,2027),subplots = c(6),plotC
 abline(v=c(2017,2018,2019,2020)) # 2020 = imp.yr
 
 # Do Ensemble modelling
-jbplot_ensemble(list(bet2,bet3,bet4))
+jbplot_ensemble(list(anchocs2,acs3,acs4))
 
 # Joint all runs
-ens = jbplot_ensemble(list(bet2,bet3,bet4),kbout=T,joint=T)
+ens = jbplot_ensemble(list(anchocs2,acs3,acs4),kbout=T,joint=T)
 
 # Do ensemble forecast
 
-fw.ens= fw_jabba(list(bet2,bet3,bet4),nyears=10,imp.yr=2,initial = Ccur,imp.values = TACs,quant="Catch",type="abs",nsq=3,stochastic = F,AR1=T,thin=3)
+fw.ens= fw_jabba(list(anchocs2,acs3,acs4),nyears=10,imp.yr=2,initial = Ccur,imp.values = TACs,quant="Catch",type="abs",nsq=3,stochastic = F,AR1=T,thin=3)
 jbpar(mfrow=c(3,2),plot.cex = 0.6)
 for(i in 1:6) jbplot_ensemble(fw.ens,add=T,subplots = i,legend = ifelse(i==2,T,F))
 
@@ -210,7 +240,7 @@ for(i in 1:6) jbplot_ensemble(fw.ens,add=T,subplots = i,legend = ifelse(i==2,T,F
 #----------------------------------------------------------------
 
 # Do hindcast cross-validation
-hc1 = hindcast_jabba(jbinput2,bet2,peels=1:5)
+hc1 = hindcast_jabba(jbinput2,anchocs2,peels=1:5)
 
 # Show Retrospective Pattern
 mohns= jbplot_retro(hc1)
@@ -236,19 +266,19 @@ jbmase(hc2)
 #------------------------------------------------------
 # Compile JABBA JAGS model and input object for Catch Only
 # Add biomass prior based on B/Bmsy guestimate
-jbinput5 = build_jabba(catch=bet$catch,model.type = "Fox",
+jbinput5 = build_jabba(catch=acs$catch,model.type = "Fox",
                        assessment=assessment,scenario =  "CatchOnly" ,
                        b.prior=c(0.5,0.2,2010,"bbmsy"),
                        psi.prior = c(1,0.1))
 
 
 # Fit JABBA
-bet5 = fit_jabba(jbinput5,save.jabba=TRUE,output.dir=output.dir)
+acs5 = fit_jabba(jbinput5,save.jabba=TRUE,output.dir=output.dir)
 
 # Check depletion prior vs posterior
-jbplot_bprior(bet5)
+jbplot_bprior(acs5)
 # Compare
-jbplot_summary(list(bet2,bet5))
+jbplot_summary(list(anchocs2,acs5))
 
 
 
